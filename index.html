@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="description" content="Gesture Hill Climb — a browser hill-climb game controlled with hand gestures." />
+  <title>Gesture Hill Climb</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <main class="app">
+    <section id="gameWrap" class="game-wrap">
+      <canvas id="game" width="1100" height="650"></canvas>
+
+      <div id="cameraPanel" class="camera-panel hidden">
+        <video id="camera" autoplay playsinline muted></video>
+        <div class="camera-label">GESTURE CAMERA</div>
+        <div id="gestureStatus" class="camera-status">Camera off</div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+
+      <div id="startOverlay" class="permission-overlay">
+        <div class="permission-card">
+          <h1>Gesture Hill Climb</h1>
+          <p>Play in your browser with webcam hand controls. Camera access is optional; keyboard controls always work.</p>
+          <div class="permission-actions">
+            <button id="cameraStart" class="primary">Start with Camera</button>
+            <button id="keyboardStart" class="secondary">Keyboard Only</button>
+          </div>
+          <small>Right open palm ↑ = drive • Left open palm ↑ = brake • Right fist = jump</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="help">
+      <div><b>Gesture controls</b> — Right hand up: drive · Left hand up: brake · Right fist: jump · Both hands up: restart after crash</div>
+      <div><b>Keyboard</b> — D/→ drive · A/← brake · W/↑/J jump · Space boost · R restart · C calibrate · Esc menu</div>
+    </section>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>

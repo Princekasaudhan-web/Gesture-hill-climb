@@ -1,0 +1,24 @@
+:root { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: #fff; background: #07131d; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: radial-gradient(circle at 50% 0%, #153a52, #07131d 65%); }
+.app { width: min(1100px, 100vw); padding: 14px; }
+.game-wrap { position: relative; width: 100%; aspect-ratio: 1100/650; border-radius: 18px; overflow: hidden; box-shadow: 0 22px 70px rgba(0,0,0,.45); background: #10283a; }
+#game { width: 100%; height: 100%; display: block; image-rendering: auto; }
+.camera-panel { position: absolute; top: 14px; right: 14px; width: 230px; height: 174px; border: 2px solid rgba(255,255,255,.75); border-radius: 12px; overflow: hidden; background: #08131c; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.camera-panel video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: block; }
+.camera-label { position:absolute; left:8px; top:7px; font-size:11px; font-weight:800; letter-spacing:.08em; background:rgba(0,0,0,.55); padding:4px 7px; border-radius:5px; }
+.camera-status { position:absolute; left:8px; right:8px; bottom:7px; font-size:11px; background:rgba(0,0,0,.6); padding:5px 7px; border-radius:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hidden { display:none !important; }
+.permission-overlay { position:absolute; inset:0; display:grid; place-items:center; background:rgba(4,16,26,.72); backdrop-filter:blur(5px); }
+.permission-card { width:min(560px, calc(100% - 32px)); text-align:center; padding:34px; border-radius:20px; background:rgba(12,42,61,.96); border:1px solid rgba(255,255,255,.15); box-shadow:0 18px 60px rgba(0,0,0,.4); }
+.permission-card h1 { margin:0 0 10px; font-size:clamp(28px,5vw,48px); color:#ffef8f; }
+.permission-card p { line-height:1.55; color:#dceaf2; margin:0 auto 22px; }
+.permission-card small { display:block; margin-top:18px; color:#b7cad5; line-height:1.5; }
+.permission-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+button { border:0; border-radius:10px; padding:13px 20px; color:white; font-weight:800; cursor:pointer; font-size:15px; }
+button.primary { background:#3e96d1; } button.secondary { background:#566673; }
+button:hover { filter:brightness(1.08); transform:translateY(-1px); }
+.help { display:flex; gap:16px; justify-content:space-between; flex-wrap:wrap; padding:10px 3px 0; color:#a9bdc8; font-size:12px; line-height:1.5; }
+.help b { color:#f8ec91; }
+.toast { position:absolute; left:50%; top:36%; transform:translate(-50%,-50%); padding:10px 18px; font-weight:900; font-size:26px; color:#ffef8f; text-shadow:0 2px 5px #000; pointer-events:none; }
+@media (max-width:700px) { .app { padding:6px; } .game-wrap { border-radius:10px; } .camera-panel { width:150px; height:112px; } .help { font-size:11px; } }
