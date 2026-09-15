@@ -133,16 +133,107 @@ function isFist(lm){const p=lm[9];return [8,12,16,20].filter(i=>Math.hypot(lm[i]
 function smooth(side,y){const a=gesture.history[side];a.push(y);if(a.length>5)a.shift();return a.reduce((s,v)=>s+v,0)/a.length;}
 function processResults(res){controls.throttle=controls.brake=0;controls.jump=false;controls.restart=false;controls.handFound=false;const statuses=[];let rightSeen=false;if(res.multiHandLandmarks&&res.multiHandedness){controls.handFound=true;res.multiHandLandmarks.forEach((lm,idx)=>{const side=res.multiHandedness[idx].label;let y=smooth(side,palmY(lm));gesture.lastHands[side]=y;const open=isOpen(lm),fist=isFist(lm);const amount=open?clamp((gesture.neutral[side]-y-.06)/.30,0,1):0;if(side==='Right'){rightSeen=true;if(open){gesture.rightOpenStreak++;gesture.rightFistStreak=0;}else if(fist){gesture.rightFistStreak++;gesture.rightOpenStreak=0;}else{gesture.rightOpenStreak=0;gesture.rightFistStreak=0;}const confirmed=gesture.rightOpenStreak>=2;if(confirmed)gesture.rightJumpArmed=true;controls.throttle=confirmed?amount:0;const jump=gesture.rightFistStreak>=3&&gesture.rightJumpArmed;controls.jump=jump;if(jump)gesture.rightJumpArmed=false;statuses.push(`RIGHT ${jump?'JUMP':fist?'FIST - HOLD':confirmed?'DRIVE':'SHOW OPEN PALM'}: ${Math.round(amount*100)}%`);}else{controls.brake=amount;statuses.push(`LEFT BRAKE: ${Math.round(amount*100)}%`);}});controls.restart=controls.throttle>.65&&controls.brake>.65;controls.message=controls.restart?'BOTH HANDS UP: RESTART':statuses.join('  | ');}else{controls.message='Show one hand to the camera';}if(!rightSeen){gesture.rightOpenStreak=0;gesture.rightFistStreak=0;}gestureStatus.textContent=controls.message;}
 
-async function startCamera(){
-  if(!window.isSecureContext){throw new Error('Camera requires HTTPS (or localhost).');}
-  gesture.stream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:640},height:{ideal:480},facingMode:'user'},audio:false});
-  video.srcObject=gesture.stream;await video.play();cameraPanel.classList.remove('hidden');
-  if(typeof Hands==='undefined')throw new Error('MediaPipe Hands failed to load.');
-  gesture.hands=new Hands({locateFile:file=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-  gesture.hands.setOptions({maxNumHands:2,modelComplexity:0,minDetectionConfidence:.65,minTrackingConfidence:.60});
-  gesture.hands.onResults(processResults);gesture.enabled=true;
-  const off=document.createElement('canvas');off.width=640;off.height=480;const octx=off.getContext('2d');
-  async function loop(){if(!gesture.enabled)return;octx.save();octx.scale(-1,1);octx.drawImage(video,-off.width,0,off.width,off.height);octx.restore();await gesture.hands.send({image:off});requestAnimationFrame(loop);}loop();
+async function startCamera() {
+  try {
+    // Check HTTPS / localhost
+    if (!window.isSecureContext) {
+      throw new Error("Camera requires HTTPS (or localhost).");
+    }
+
+    // Check browser camera support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("Your browser does not support camera access.");
+    }
+
+    gestureStatus.textContent = "📷 Requesting camera permission...";
+
+    // Request camera
+    gesture.stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+        facingMode: "user"
+      },
+      audio: false
+    });
+
+    // Connect camera stream
+    video.srcObject = gesture.stream;
+
+    await video.play();
+
+    // Camera is successfully running
+    cameraPanel.classList.remove("hidden");
+    gestureStatus.textContent = "🟢 Camera ON • Show your hand";
+
+    // Check MediaPipe
+    if (typeof Hands === "undefined") {
+      throw new Error("MediaPipe Hands failed to load.");
+    }
+
+    // Create MediaPipe Hands
+    gesture.hands = new Hands({
+      locateFile: file =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    gesture.hands.setOptions({
+      maxNumHands: 2,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.65,
+      minTrackingConfidence: 0.60
+    });
+
+    gesture.hands.onResults(processResults);
+
+    gesture.enabled = true;
+
+    // Hidden canvas for mirrored camera processing
+    const off = document.createElement("canvas");
+    off.width = 640;
+    off.height = 480;
+
+    const octx = off.getContext("2d");
+
+    async function loop() {
+      if (!gesture.enabled) return;
+
+      try {
+        octx.save();
+
+        // Mirror camera image
+        octx.scale(-1, 1);
+        octx.drawImage(
+          video,
+          -off.width,
+          0,
+          off.width,
+          off.height
+        );
+
+        octx.restore();
+
+        await gesture.hands.send({
+          image: off
+        });
+
+      } catch (error) {
+        console.error("MediaPipe processing error:", error);
+        gestureStatus.textContent = "⚠️ Hand tracking error";
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+
+  } catch (err) {
+    console.error("Camera startup error:", err);
+
+    gestureStatus.textContent = `❌ ${err.message}`;
+
+    throw err;
+  }
 }
 function stopCamera(){gesture.enabled=false;if(gesture.stream)gesture.stream.getTracks().forEach(t=>t.stop());cameraPanel.classList.add('hidden');}
 
